@@ -5,8 +5,9 @@ Two important reference works, [DPO](https://arxiv.org/abs/2305.18290) and [SLiC
 
 During RL finetuning, typically a KL divergence constraint is used to prevent the fine-tuned model from drifting too far from the pretrained/SFT-ed model.
 
-It can be proved that the optimal distribution $\pi^* = \text{argmax}_{\pi}E_{y \sim \pi(y|x)}[r(x, y)]$  such that $D_{KL}[\pi(y|x)||\pi_{sft}(y|x)] < \epsilon$ is:
+It can be proved that the optimal distribution $\pi^* = \text{argmax}\_{\pi}E\_{y \sim \pi(y|x)}[r(x, y)]$  such that $D_{KL}[\pi(y|x)||\pi_{sft}(y|x)] < \epsilon$ is: <br>
  $\displaystyle \pi^* = \frac{1}{Z(x)}\pi_{sft}(y|x) \cdot\exp(\frac{1}{\gamma}r(x, y))$
+
 where:
 - $D_{KL}(\pi||\pi_{sft})$ is the KL-divergence between $\pi$ and $\pi_{sft}$
 - $\gamma$ is like a "temperature" parameter. When $\gamma \to 0$ it means full reward exploitation and $\gamma \to \infty$ means $\pi^* = \pi_{sft}$ with full exploration.  
@@ -30,12 +31,24 @@ The estimation of $\pi^*$ can be viewed as a density estimation problem.
 In this case $\pi_{sft}$ is used as the proposal distribution from which we can generate samples.
 Steps given in the paper follow the general statistical rejection sampling, and Appendix A.1 gives the Python code.
 
-The key part is to compute $\displaystyle \frac{\pi_{r_{\psi}}(y|x)}{M\cdot\pi_{sft}(y|x)}$.
-We know in statistical rejection sampling we must have $M\cdot\pi_{sft}(y|x) \ge \pi_{r_{\psi}}(y|x)$. Usually we use the smallest M, ie., $\displaystyle M = \max\frac{\pi_{r_{\psi}}(y|x)}{\pi_{sft}(y|x)}$
-Since the optimal policy $\displaystyle \pi_{r_{\psi}}(y|x) = \frac{1}{Z_{\psi}(x)}\pi_{sft}(y|x) \cdot\exp(\frac{1}{\beta}r_{\psi}(x, y))$, we have
+The key part is to compute $\large\frac{\pi_{r_{\psi}}(y|x)}{M\cdot\pi_{sft}(y|x)}$.
+
+We know in statistical rejection sampling we must have $M\cdot\pi_{sft}(y|x) \ge \pi_{r_{\psi}}(y|x)$. 
+
+Usually we use the smallest M, ie., $\displaystyle M = \max\frac{\pi_{r_{\psi}}(y|x)}{\pi_{sft}(y|x)}$.
+
+Since the optimal policy $\displaystyle \pi_{r_{\psi}}(y|x) = \frac{1}{Z_{\psi}(x)}\pi_{sft}(y|x) \cdot\exp(\frac{1}{\beta}r_{\psi}(x, y))$
+
+we have
+
 $\displaystyle \frac{\pi_{r_{\psi}}(y|x)}{\pi_{sft}(y|x)} = \frac{1}{Z_{\psi}(x)}\cdot\exp(\frac{1}{\beta}r_{\psi}(x, y))$ --- (1)
-then $\displaystyle M= \frac{1}{Z_{\psi}(x)}\max[\exp(\frac{1}{\beta}r_{\psi}(x, y))] = \frac{1}{Z_{\psi}(x)}\exp[\frac{1}{\beta}\max(r_{\psi}(x, y))]$ --- (2)
-Put (1) and (2) together, $\displaystyle \frac{\pi_{r_{\psi}}(y|x)}{M\cdot\pi_{sft}(y|x)} = \exp[\frac{1}{\beta}(r_{\psi}(x, y) - \max r_{\psi}(x, y))]$
+
+$M= \displaystyle \frac{1}{Z_{\psi}(x)}\max[\exp(\frac{1}{\beta}r_{\psi}(x, y))] = \frac{1}{Z_{\psi}(x)}\exp[\frac{1}{\beta}\max(r_{\psi}(x, y))]$ --- (2)
+
+Put (1) and (2) together, 
+
+$\displaystyle \frac{\pi_{r_{\psi}}(y|x)}{M\cdot\pi_{sft}(y|x)} = \exp[\frac{1}{\beta}(r_{\psi}(x, y) - \max r_{\psi}(x, y))]$
+
 $r_{\psi}(x, y)$ is given by the trained reward model, and $\max(r_{\psi}(x, y))$ is approximated as max reward of a mini-batch of samples. 
 
 Section 5.2 in the paper gives details on generating preference pairs:
@@ -50,4 +63,5 @@ The paper says, statistical rejection sampling is better than best-of-N or top-k
 ### Loss function
 
 Based on the loss function in DPO and SLiC, this paper proposes a new loss function:
-$\displaystyle L_{\text{hinge-norm}}(\pi_{\theta}|\pi_{sft}, D_p) = \mathbb{E}_{(x,y_w,y_l) \sim D_p}[\max(0, 1-[\gamma\log\frac{\pi_{\theta}(y_w|x)}{\pi_{sft}(y_w|x)} - \gamma\log\frac{\pi_{\theta}(y_l|x)}{\pi_{sft}(y_l|x)}])]$
+
+$\displaystyle L_{\text{hinge-norm}}(\pi_{\theta}|\pi_{sft}, D_p) = \mathbb{E}\_{(x,y_w,y_l) \sim D_p}[\max(0, 1-[\gamma\log\frac{\pi_{\theta}(y_w|x)}{\pi_{sft}(y_w|x)} - \gamma\log\frac{\pi_{\theta}(y_l|x)}{\pi_{sft}(y_l|x)}])]$
