@@ -2,7 +2,7 @@ GRPO is introduced in the paper [DeepSeekMath: Pushing the Limits of Mathematica
 
 ### PPO
 PPO is a policy gradient algorithm. The objective function of PPO is:
-$\displaystyle J_{PPO}(\theta)=E_{q \sim P, o \sim \pi_{\theta_{old}}}\left[\frac{1}{|o_i|}\sum^{|o_i|}\_{t=1}\min\left(\frac{\pi_\theta(o_t|q, o_{<t})}{\pi_{\theta_{old}}(o_t|q, o_{<t})}A_t, \text{clip}(\frac{\pi_\theta(o_t|q, o_{<t})}{\pi_{\theta_{old}}(o_t|q, o_{<t})}, 1-\varepsilon, 1+\varepsilon)A_t\right)\right]$
+$\displaystyle J_{PPO}(\theta)=E_{q \sim P, o \sim \pi_{\theta_{old}}}\left[\min\left(\frac{\pi_\theta(o_t|q, o_{<t})}{\pi_{\theta_{old}}(o_t|q, o_{<t})}A_t, \text{clip}(\frac{\pi_\theta(o_t|q, o_{<t})}{\pi_{\theta_{old}}(o_t|q, o_{<t})}, 1-\varepsilon, 1+\varepsilon)A_t\right)\right]$
 
 where $q$ is a question (prompt), and $o$ is the response sampled from policy $\pi_{\theta_{old}}$ given $q$.
 
@@ -37,7 +37,7 @@ In PPO, to compute $A_t$ we need fit a state function $V(s)$ alongside with poli
 
 GRPO proposes to use the average reward of multiple sampled outputs rather than fitting a state value function. Specifically, for each question $q$, instead of sampling a single output, GRPO samples a group of outputs $\\{o_1, o_2, ...,o_G\\}$, and then optimizes the policy model by the follow objective:
 
-$\displaystyle J_{GRPO}(\theta)=E_{q \sim P, o_i \sim \pi_{\theta_{old}}}\left[\frac{1}{G}\sum^G_{i=1}\frac{1}{|o_i|}\sum^{|o_i|}\_{t=1}\min\left(\text{ratio}\_{i, t}\hat{A}\_{i, t}, \text{clip}(\text{ratio}\_{i, t},1-\varepsilon,1+\varepsilon)\hat{A}\_{i, t}\right)-\beta D_{KL}[\pi_\theta||\pi_{ref}]\right]$
+$\displaystyle J_{GRPO}(\theta)=E_{q \sim P, o_i \sim \pi_{\theta_{old}}}\left[\frac{1}{G}\sum^G_{i=1}\min\left(\text{ratio}\_{i, t}\hat{A}\_{i, t}, \text{clip}(\text{ratio}\_{i, t},1-\varepsilon,1+\varepsilon)\hat{A}\_{i, t}\right)-\beta D_{KL}[\pi_\theta||\pi_{ref}]\right]$
 
 where<br>
 $\displaystyle \text{ratio}\_{i, t} = \frac{\pi_\theta(o_{i,t}|q, o_{i<t})}{\pi_{\theta_{old}}(o_{i,t}|q, o_{i<t})}$.
