@@ -1,4 +1,10 @@
-GRPO is introduced in the paper [DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models](https://arxiv.org/abs/2402.03300), and is a variant of [PPO](https://arxiv.org/abs/1707.06347). 
+GRPO is introduced in the paper [DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models](https://arxiv.org/abs/2402.03300), and is a variant of [PPO](https://arxiv.org/abs/1707.06347).
+
+The GRPO algorithm looks to me is like a clipped + KL regularized version of the basic reinforce policy gradient algorithm, especially the outcome supervision method. 
+The process supervision replaces $r(\tau)$ as a reward-to-go value.
+$r(\tau)$ has high variance, that's why a group of outputs for each question $q$ is sampled, I believe. So GRPO trades sampling efficiency for computation efficiency (less memory footprint).
+
+The DeepSeekMath paper also talked about [RFT (Rejection Sampling Fine-tuning)](https://arxiv.org/abs/2308.01825). This RFT method first samples data from $\pi_{sft}$ or $\pi_\theta$, and then filter wrong and duplicated answers to generate new training data to further finetune $\pi_\theta$. It makes sense that online RFT with data sampled from $\pi_\theta$ has better performance, since $\pi_{sft}$ has a distributional shift.
 
 ### PPO
 PPO is a policy gradient algorithm. The objective function of PPO is:
@@ -67,8 +73,4 @@ Iterative training works in a similar way as the online training in the RLHF met
 At the end of each iteration, the reward model is **continuously trained** based on sampling results from $\pi_\theta$, with 10% historical data. (:FasQuestion: How are the samples labelled?  )
 And in the next iteration, the reference model $\pi_{ref}$ is replaced with the policy model $\pi_\theta$ trained in the last iteration.
 
-#### My summary
-The GRPO algorithm looks to me is like a clipped reinforce algorithm, the basic policy gradient algorithm, regularized by KL divergence, especially the outcome supervision method. 
-The process supervision replaces $r(\tau)$ as a reward-to-go value.
-$r(\tau)$ has high variance, that's why a group of outputs for each question $q$ is sampled. So GRPO trades sampling efficiency for computation efficiency (less memory footprint).
 
