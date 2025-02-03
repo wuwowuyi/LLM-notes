@@ -10,7 +10,7 @@ Focus on the post-training pipeline and data curation.
 ## DeepSeek V3
 The post training pipeline is depicted as follows.
 
-<img src="assets/DeepSeek-v3-post_training.jpg" alt="deepseek v3 post training pipeline" width="550"/>
+<img src="assets/deepseek-v3-post_training.jpg" alt="deepseek v3 post training pipeline" width="550"/>
 
 ### V3 SFT
 #### Reasoning data curation
