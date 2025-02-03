@@ -10,6 +10,8 @@ Focus on the post-training pipeline and data curation.
 ## DeepSeek V3
 The post training pipeline is depicted as follows.
 
+<img src="assets/DeepSeek-v3-post_training.jpg" alt="deepseek v3 post training pipeline" width="550"/>
+
 ### V3 SFT
 #### Reasoning data curation
 For each domain, such as code, math, or general reasoning, an expert model, later used as data generator, is trained by following the base + SFT + RL procedure. 
