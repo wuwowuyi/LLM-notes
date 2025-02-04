@@ -13,17 +13,17 @@ where:
 - $\gamma$ is like a "temperature" parameter. When $\gamma \to 0$ it means full reward exploitation and $\gamma \to \infty$ means $\pi^* = \pi_{sft}$ with full exploration.  
 - $Z(x)=E_{y \sim \pi_{sft}}[\exp(\frac{1}{\gamma}r(x,y))]$, i.e., $Z(x)$ is a normalizing constant wrt. $y \sim \pi_{sft}$. 
 
-Note in the optimization objective $E_{y \sim \pi(y|x)}[r(x, y)]$, $y \sim \pi(y|x)$, i.e., given prompt $x$, the response $y$ is sampled from the optimizing policy $\pi$, not $\pi_{sft}$ or any other policies $\pi_{unk}$, where $\pi_{unk}$ denotes any other policies. Existing works like DPO do not train from prompt response pairs sampled from $\pi$, which results a distributional shift. 
+Note in the optimization objective $E_{y \sim \pi(y|x)}[r(x, y)]$, $y \sim \pi(y|x)$, i.e., **given prompt $x$, the response $y$ is sampled from the optimizing policy $\pi$, not $\pi_{sft}$ or any other policies $\pi_{unk}$**. Existing works like DPO do not train from prompt response pairs sampled from $\pi$, which results in a distributional shift. 
 
-This paper propose a training framework to alleviate the distributional shift to achieve better performance. Specifically: 
+This paper propose a training pipeline to alleviate the distributional shift to achieve better performance. Specifically: 
 * Fit a pairwise ranking reward model $r_{\psi}(x, y)$ from a human preference dataset $D_{hf}$ collected from any policy
-* By using statistical rejection sampling, we can approximate generating samples from the optimal policy $\pi^*$ by sampling from the proposal distribution $\pi_{sft}$
-* Label accepted samples $\mathcal{Y}$ using trained reward model $r_{\psi}(x, y)$
+* Given a SFT model $\pi_{sft}$, by using statistical rejection sampling, we can approximate generating samples from the optimal policy $\pi^*$ by sampling from the proposal distribution $\pi_{sft}$
+* Label accepted samples $\mathcal{Y}$ from last step using trained reward model $r_{\psi}(x, y)$
 * train a policy model on $\mathcal{Y}$ in the same way as DPO
 
 The authors found that the language model **learns better from an explicit reward model** because comparing between two responses (reward) is easier to learn than generating high quality responses (policy).
 
-:question: My Question: The proposed training method alleviates the distributional shift in training policy model. But it looks to me the reward model still has a similar problem since it is trained on $D_{hf}$. Maybe because the reward model is easier to train, the distributional shift has less negative effect?
+🤔 My Question: The proposed training method alleviates the distributional shift in training policy model. But it looks to me the reward model still has a similar problem since it is trained on $D_{hf}$. Maybe because the reward model is easier to train, the distributional shift has less negative effect?
 ### Statistical rejection sampling
 Statistical rejection sampling is key to approximate generating samples from the optimal policy.
 
