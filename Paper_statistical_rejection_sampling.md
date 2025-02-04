@@ -21,9 +21,12 @@ This paper propose a training pipeline to alleviate the distributional shift to 
 * Label accepted samples $\mathcal{Y}$ from last step using trained reward model $r_{\psi}(x, y)$
 * train a policy model on $\mathcal{Y}$ in the same way as DPO
 
+<img src="assets/statistical_rejection_sampling.jpg" alt="statistical rejection sampling training pipeline" width="500"/>
+
 The authors found that the language model **learns better from an explicit reward model** because comparing between two responses (reward) is easier to learn than generating high quality responses (policy).
 
-🤔 My Question: The proposed training method alleviates the distributional shift in training policy model. But it looks to me the reward model still has a similar problem since it is trained on $D_{hf}$. Maybe because the reward model is easier to train, the distributional shift has less negative effect?
+🤔: The proposed training method alleviates the distributional shift in training policy model. But it looks to me the reward model still has a similar problem since it is trained on $D_{hf}$. Maybe because the reward model is easier to train, the distributional shift has less negative effect? Nevertheless, continuously train the reward model with preference pairs generated from optimizing policy should improve performance.
+
 ### Statistical rejection sampling
 Statistical rejection sampling is key to approximate generating samples from the optimal policy.
 
@@ -59,7 +62,8 @@ Section 5.2 in the paper gives details on generating preference pairs:
 
 The paper points out that the tournament ranking used in SLiC **introduces bias towards higher reward sequences**.
 
-The paper says, statistical rejection sampling is better than best-of-N or top-k-over-N algorithms which has the issue of **reward hacking** because it trusts the reward model without regularization. In other words, statistical rejection sampling **makes a better tradeoff between reward exploitation and exploration**, while the best-of-N or top-k-over-N means pure exploitation and as a result more vulnerable to reward hacking.
+The paper claims, **statistical rejection sampling is better than best-of-N or top-k-over-N** algorithms which has the issue of **reward hacking** because it trusts the reward model without regularization. In other words, statistical rejection sampling **makes a better tradeoff between reward exploitation and exploration**, while the best-of-N or top-k-over-N means pure exploitation and as a result more vulnerable to reward hacking.
+
 ### Loss function
 
 Based on the loss function in DPO and SLiC, this paper proposes a new loss function:
