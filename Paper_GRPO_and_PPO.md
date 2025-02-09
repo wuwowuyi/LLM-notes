@@ -1,10 +1,12 @@
 GRPO is introduced in the paper [DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models](https://arxiv.org/abs/2402.03300), and is a variant of [PPO](https://arxiv.org/abs/1707.06347).
 
-The GRPO algorithm looks to me is like a clipped + KL regularized version of the basic reinforce policy gradient algorithm, especially the outcome supervision method. 
-The process supervision replaces $r(\tau)$ as a reward-to-go value.
+🤔 The GRPO algorithm looks to me is like a clipped + KL regularized version of the basic reinforce policy gradient algorithm, especially the outcome supervision method. 
+The process supervision replaces $r(\tau)$ as a reward-to-go value, where $\tau$ is the trajectory. 
 $r(\tau)$ has high variance, that's why a group of outputs for each question $q$ is sampled, I believe. So GRPO trades sampling efficiency for computation efficiency (less memory footprint).
 
-The DeepSeekMath paper also talked about [RFT (Rejection Sampling Fine-tuning)](https://arxiv.org/abs/2308.01825). This RFT method first samples data from $\pi_{sft}$ or $\pi_\theta$, and then filter wrong and duplicated answers to generate new training data to further finetune $\pi_\theta$. It makes sense that online RFT with data sampled from $\pi_\theta$ has better performance, since $\pi_{sft}$ has a distributional shift.
+The DeepSeekMath paper also talks about [RFT (Rejection Sampling Fine-tuning)](https://arxiv.org/abs/2308.01825). This RFT method first samples data from $\pi_{sft}$ or $\pi_\theta$ (the optimizing policy), and then filter wrong and duplicated answers to generate new training data to 
+further finetune $\pi_\theta$. <br> 
+🤔 It makes sense that online RFT with data sampled from $\pi_\theta$ has better performance, since sampling from $\pi_{sft}$ has a distributional shift.
 
 ### PPO
 PPO is a policy gradient algorithm. The objective function of PPO is:
@@ -43,7 +45,7 @@ In PPO, to compute $A_t$ we need fit a state function $V(s)$ alongside with poli
 
 GRPO proposes to use the average reward of multiple sampled outputs rather than fitting a state value function. Specifically, for each question $q$, instead of sampling a single output, GRPO samples a group of outputs $\\{o_1, o_2, ...,o_G\\}$, and then optimizes the policy model by the follow objective:
 
-$\displaystyle J_{GRPO}(\theta)=E_{q \sim P, o_i \sim \pi_{\theta_{old}}}\left[\frac{1}{G}\sum^G_{i=1}\min\left(\text{ratio}\_{i, t}\hat{A}\_{i, t}, \text{clip}(\text{ratio}\_{i, t},1-\varepsilon,1+\varepsilon)\hat{A}\_{i, t}\right)-\beta D_{KL}[\pi_\theta||\pi_{ref}]\right]$
+$\displaystyle J_{GRPO}(\theta)=E_{q \sim P, o_i \sim \pi_{\theta_{old}}}\left[\frac{1}{G}\sum^G_{i=1}\left(\min\left(\text{ratio}\_{i, t}\hat{A}\_{i, t}, \text{clip}(\text{ratio}\_{i, t},1-\varepsilon,1+\varepsilon)\hat{A}\_{i, t}\right)-\beta D_{KL}[\pi_\theta||\pi_{ref}]\right)\right]$
 
 where<br>
 $\displaystyle \text{ratio}\_{i, t} = \frac{\pi_\theta(o_{i,t}|q, o_{i<t})}{\pi_{\theta_{old}}(o_{i,t}|q, o_{i<t})}$.
@@ -51,18 +53,18 @@ $\displaystyle \text{ratio}\_{i, t} = \frac{\pi_\theta(o_{i,t}|q, o_{i<t})}{\pi_
 Compared with PPO, the only difference is how $\hat{A}\_{i, t}$ is computed. GRPO proposes two methods to estimate $\hat{A}_{i, t}$, outcome supervision and process supervision.
 
 #### Outcome supervision
-A reward model gives each output $\\{o_1, o_2, ...,o_G\\}$ at the last step a score, yielding $r = \\{r_1, r_2, ...,r_G\\}$, then set the reward at all step as $\hat{A}_{i, t}=\tilde{r}_i = \frac{r_i - mean(r)}{std(r)}$ where $mean(r)$ is group mean and $std(r)$ group standard deviation.
+A reward model gives a score of each output $\\{o_1, o_2, ...,o_G\\}$ **at the last step** (i.e., for the entire output), yielding $r = \\{r_1, r_2, ...,r_G\\}$, then set the reward of **all steps** as $\hat{A}_{i, t}=\tilde{r}_i = \frac{r_i - mean(r)}{std(r)}$ where $mean(r)$ is group mean and $std(r)$ group standard deviation.
 
 #### Process supervision
-Process supervision requires to train a process reward model which can give a score for each step. Like for a math question, process model is trained with a per-step labelled dataset.
+Process supervision requires to first train a process reward model which can give a score for each step, which means a per-step preference dataset is needed to train the reward model. (🤔 this is possible with math questions, but not with all types of questions.)
 
 Given a question $q$ and its group outputs $\\{o_1, o_2, ...,o_G\\}$, the process reward model can generate scores $R=\\{\\{r_1^{index(1)},...,r_1^{index(K_1)}\\},...,\\{r_G^{index(1)},...,r_G^{index(K_G)}\\}\\}$, where $index(j)$ is the last token of the $j$-step, and $K_i$ is the total number of steps in the $o_i$ output. 
 
 Let $\tilde{r}\_i^{index(j)} = \frac{r_i^{index(j)} - mean(R)}{std(R)}$, <br>
-we have $\hat{A}\_{i, t}=\sum_{index(j) \ge t}\tilde{r}_i^{index(j)}$, which is a reward-to-go, the sum of all rewards after the current step.
+we have $\hat{A}\_{i, t}=\sum_{index(j) \ge t}\tilde{r}_i^{index(j)}$, which is a reward-to-go value, the sum of all rewards as of the current step.
 
 #### KL penalty
-The per-output KL penalty is not included in the reward as PPO does. In stead, it is estimated with the following unbiased estimator ([Schulman, 2020](http://joschu.net/blog/kl-approx.html)):
+The per-token KL penalty is not included in the reward as PPO does. In stead, it is estimated with the following unbiased estimator ([Schulman, 2020](http://joschu.net/blog/kl-approx.html)):
 
 $\displaystyle D_{KL}[\pi_\theta||\pi_{ref}] = \frac{\pi_{ref}(o_{i,t}|q, o_{i<t})}{\pi_\theta(o_{i,t}|q, o_{i<t})} - \log\frac{\pi_{ref}(o_{i,t}|q, o_{i<t})}{\pi_\theta(o_{i,t}|q, o_{i<t})} - 1$
 
@@ -70,7 +72,7 @@ which is guaranteed to be positive.
 
 #### Iterative training
 Iterative training works in a similar way as the online training in the RLHF methods.
-At the end of each iteration, the reward model is **continuously trained** based on sampling results from $\pi_\theta$, with 10% historical data. (:FasQuestion: How are the samples labelled?  )
+At the end of each iteration, the reward model is **continuously trained** based on sampling results from $\pi_\theta$, with 10% historical data. (🤔 How are the samples labelled? )
 And in the next iteration, the reference model $\pi_{ref}$ is replaced with the policy model $\pi_\theta$ trained in the last iteration.
 
 
