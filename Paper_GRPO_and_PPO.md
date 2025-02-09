@@ -14,6 +14,8 @@ $\displaystyle J_{PPO}(\theta)=E_{q \sim P, o \sim \pi_{\theta_{old}}}\left[\min
 
 where $q$ is a question (prompt), and $o$ is the response sampled from policy $\pi_{\theta_{old}}$ given $q$.
 
+Note $\pi_{\theta_{old}}$ is just the optimizing policy from last iteration, not $\pi_{sft}$. 
+
 Because the sampling policy is $\pi_{\theta_{old}}$ rather than $\pi_\theta$, importance sampling <br>
 $\displaystyle \text{ratio}\_t(\theta)=\frac{\pi_\theta(o_t|q, o_{<t})}{\pi_{\theta_{old}}(o_t|q, o_{<t})}$ <br>
 is used.
