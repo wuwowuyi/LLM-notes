@@ -1,9 +1,9 @@
-Focus on the post-training pipeline and data curation. 
+Focus on the post-training pipeline and data curation. (Paragraph or sentence marked with 🤔 are my own thinkings.)
 
 🤔common patterns in DeekSeek's training
 * Iterative
-* Reasoning oriented data generation (for SFT & RL) is critical
-  * typically uses a more powerful model to generate CoT responses, focusing on accuracy
+* **Reasoning oriented** data generation (for SFT & RL) is critical
+  * typically uses a more powerful model to generate **long CoT** responses, focusing on accuracy
   * responses that are encourage readability, clarity, etc. are included 
 
 
@@ -35,12 +35,12 @@ cosine decay learning rate. initial lr 5e-6, minimum lr 1e-6.
 GRPO algorithm.
 Diverse distribution of prompts, including reasoning and general questions.  
 
-The key in RL is reward modeling.
+The key in RL is **reward modeling**.
 
 🤔 Use rule-based reward as much as possible, since the math verifier, code compiler are like "real environment", resistant to reward hacking.
 
 Model based RM, initialized from V3 SFT checkpoint. 
-* for questions with free-form ground-truth answers, reward model determines whether the response matches the expected ground-truth. (🤔 question answering, Tldr, etc. But how to compute the distance between answer and response? like dot product of embeddings? )
+* for questions with free-form ground-truth answers, reward model determines whether the response matches the expected ground-truth. (🤔 question answering, tldr, etc. But how to compute the distance between answer and response? use reward model to give a score? ~~or like dot product of embeddings?~~ )
 * for questions without ground-truth, like creative writing, reward model provides feedback (🤔 reward model trained to give a scalar score?)
 
 🤔 Also, it reads like the accepted answer in a preference pair data point includes chain-of-thought to encourage model to follow.  
@@ -53,11 +53,11 @@ Use GRPO algorithm.
 
 The reward consists two parts:
 * reward from a "real environment" like a Math question verifier, or a code compiler
-* reward from a trained format reward model that enforces the output in pre-defined tags, \<think\>, \<answer\>.
+* reward from a trained <ins>format reward model</ins> that enforces the output in pre-defined tags, \<think\>, \<answer\>.
 
 My understandings here: 🤔
 * Because the reward is from a "real environment", that's why the paper says it conducts RL training without any supervised data.
-* Only works for math questions, code, etc. that have clear solutions to get a reward score.
+* Only works for math questions, code, etc. that have definite/deterministic solutions to get a reward score.
 ### training template
 A training template is designed to guide the model to first produce a reasoning process, followed by the final answer.
 The template contains instructions **only on structural format**, avoiding any content-specific prompts, like reflective reasoning or any particular strategies.
