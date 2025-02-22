@@ -1,10 +1,10 @@
 GRPO is introduced in the paper [DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models](https://arxiv.org/abs/2402.03300), and is a variant of [PPO](https://arxiv.org/abs/1707.06347).
 
-🤔 The GRPO algorithm looks to me is like a clipped + KL regularized version of the basic reinforce policy gradient algorithm, especially the outcome supervision method. 
-The process supervision replaces $r(\tau)$ as a reward-to-go value, where $\tau$ is the trajectory. 
-$r(\tau)$ has high variance, that's why a group of outputs for each question $q$ is sampled, I believe. So GRPO trades sampling efficiency for computation efficiency (less memory footprint).
+🤔 The differences between GRPO algorithm and PPO are: 
+* Reward $r(\tau)$ of a trajectory $\tau$ has high variance. GAE uses a value function $V(s)$ as a baseline to reduce variance. GRPO simply uses $b = \frac{1}{N} \sum_{i=1}^{N}r(\tau)$ to approximate the baseline to save from training a value function model. So for each prompt, a group of trajectories is sampled in order to compute a baseline. (GRPO trades sampling efficiency for computation/memory efficiency.)
+* In stead of per-step kl penalty, GRPO uses $D_{KL}[\pi_\theta||\pi_{ref}]$ as a constraint. Note the initial $\pi_{ref}$ is equivalent to $\pi_{sft}$, but in the online iterative training setting, as of the second iteration $\pi_{ref}$ is $\pi_\theta$ trained in the last iteration (not last gradient step, $\pi_{\theta_{old}}$ is from the last gradient step.). 
 
-The DeepSeekMath paper also talks about [RFT (Rejection Sampling Fine-tuning)](https://arxiv.org/abs/2308.01825). This RFT method first samples data from $\pi_{sft}$ or $\pi_\theta$ (the optimizing policy), and then filter wrong and duplicated answers to generate new training data to 
+The DeepSeekMath paper also talks about [RFT (Rejection Sampling Fine-tuning)](https://arxiv.org/abs/2308.01825). This RFT method first samples data from $\pi_{sft}$ (offline) or $\pi_\theta$ (online), and then filter wrong and duplicated answers to generate new training data to 
 further finetune $\pi_\theta$. <br> 
 🤔 It makes sense that online RFT with data sampled from $\pi_\theta$ has better performance, since sampling from $\pi_{sft}$ has a distributional shift.
 
@@ -14,7 +14,7 @@ $\displaystyle J_{PPO}(\theta)=E_{q \sim P, o \sim \pi_{\theta_{old}}}\left[\min
 
 where $q$ is a question (prompt), and $o$ is the response sampled from policy $\pi_{\theta_{old}}$ given $q$.
 
-Note $\pi_{\theta_{old}}$ is just the optimizing policy from last iteration, not $\pi_{sft}$. 
+Note $\pi_{\theta_{old}}$ is just the optimizing policy from last gradient step, not $\pi_{sft}$. 
 
 Because the sampling policy is $\pi_{\theta_{old}}$ rather than $\pi_\theta$, importance sampling <br>
 $\displaystyle \text{ratio}\_t(\theta)=\frac{\pi_\theta(o_t|q, o_{<t})}{\pi_{\theta_{old}}(o_t|q, o_{<t})}$ <br>
@@ -22,7 +22,7 @@ is used.
 
 Further, in order to stabilize training, preventing too large gradient steps, this probability ratio $\text{ratio}_t(\theta)$ is clipped to lie in the interval $[1-\varepsilon, 1+\varepsilon]$ where $\varepsilon$ is a hyperparameter, like 0.2.
 
-#### Generalized advantage estimator 
+#### Generalized advantage estimator (GAE)
 $A_t$ is the advantage computed according to the [GAE algorithm](https://arxiv.org/abs/1506.02438), and is an exponentially-weighted average of $k$-step advantage estimators.
 
 $k$-step advantage estimator with a discount factor $\gamma$ is as follows:<br>
