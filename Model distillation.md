@@ -1,7 +1,8 @@
 Papers
-* [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531)
-* [Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes](https://arxiv.org/abs/2305.02301)
-* 
+* [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531), 2015
+* [Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes](https://arxiv.org/abs/2305.02301), 2023
+
+🤔 I think the key point, from both papers, is that we want match the small model's output distribution to the teacher's. Simply matching the labels may result in a narrow distribution that does not generalize well.
 
 ## Distilling the Knowledge in a Neural Network
 
