@@ -59,7 +59,7 @@ The framework has two steps, rationale extraction and training.
 ### Rationale Extraction
 First, given a LLM and an **unlabeled** dataset, we use Chain-of-Thought (CoT) prompting to elicit and extract rationales from LLMs.
 
-<img src="../assets/rationale_extraction.png" alt="rationale_extraction" width="500"/>
+<img src="assets/rationale_extraction.png" alt="rationale_extraction" width="500"/>
 
 Each prompt is a triplet $(x^p, r^p, y^p)$ where $x^p$ is an input, $y^p$ is the label, and $r^p$ is a **user-provided rationale** that explains why $x^p$ can be categorized as $y^p$. With the demonstration seen in $p$, the LLM is able to mimic the triplet demonstration to generate the rationale $\hat{r}_i$ and output $\hat{y}_i$ for input $x_i$.
 
