@@ -21,7 +21,7 @@ This paper propose a training pipeline to alleviate the distributional shift to 
 * Label accepted samples $\mathcal{Y}$ from last step using trained reward model $r_{\psi}(x, y)$
 * train a policy model on $\mathcal{Y}$ in the same way as DPO
 
-<img src="assets/statistical_rejection_sampling.jpg" alt="statistical rejection sampling training pipeline" width="500"/>
+<img src="../assets/statistical_rejection_sampling.jpg" alt="statistical rejection sampling training pipeline" width="500"/>
 
 The authors found that the language model **learns better from an explicit reward model** because comparing between two responses (reward) is easier to learn than generating high quality responses (policy).
 

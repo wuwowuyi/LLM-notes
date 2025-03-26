@@ -10,7 +10,7 @@ Focus on the post-training pipeline and data curation. (Paragraph or sentence ma
 ## DeepSeek V3
 The post training pipeline is depicted as follows.
 
-<img src="assets/deepseek-v3-post_training.jpg" alt="deepseek v3 post training pipeline" width="550"/>
+<img src="../assets/deepseek-v3-post_training.jpg" alt="deepseek v3 post training pipeline" width="550"/>
 
 ### V3 SFT
 #### Reasoning data curation
@@ -71,7 +71,7 @@ I understand there are two iterations: 🤔
 * First iteration is reasoning oriented, SFT + RL to train a model to generate reasoning training data
 * Second, SFT + RL to re-train a base model on a wide range of data distribution
 
-<img src="assets/deepseek-r1-pt.jpg" alt="deepseek r1 post training pipeline" width="500"/>
+<img src="../assets/deepseek-r1-pt.jpg" alt="deepseek r1 post training pipeline" width="500"/>
 
 ### R1 post training first iteration
 The goal of this iteration is to generate reasoning data for the second iteration.
